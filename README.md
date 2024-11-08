@@ -1,14 +1,16 @@
-MIKEIFICATION
-
-MIKEIFIES ALL YOUR MESSAGES
+mike bot!!!!
 
 ---------------------------
 
 commands: 
 
-!mike disable - disables bot :(
-
-!mike enable - MIKEIFICATION ACTIVATED!!!!!!!
+!mike help - LISTS ALL COMMANDS!!
+!mike disable - DISABLES MIKE!!!
+!mike enable - ENABLES MIKEIFYING!!!
+!mike meow - old mike commands!!!!!!
+!mike jizz - meow
+!mike silverwolf - SILVERWOLF IMAGES!!!!!
+!mike goon - gooning
 
 ---------------------------
 
