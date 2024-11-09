@@ -154,7 +154,7 @@ client.on("messageCreate", async (message) => {
 
     // API call
     // API URL: https://testbooru.donmai.us/
-    // API Key: 7WDoEjkQt9cfWy4h7iT6u3ay
+    // API Key: redacted
     // Dont ask How This Works I Chatgpted it
     async function searchImages(apiKey, tags) {
         const params = new URLSearchParams({
