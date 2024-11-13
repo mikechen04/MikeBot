@@ -4,7 +4,6 @@ import fetch from 'node-fetch';
 import pkg from 'discord.js'
 
 // Takes image.txt and puts it into a const
-// I feel like I don't need half the code here but oh well
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,8 +12,7 @@ const __dirname = path.dirname(__filename);
 const imageFilePath = path.join(__dirname, 'images.txt');
 const imageLinks = fs.readFileSync(imageFilePath, 'utf-8').split('\n').filter(Boolean);
 
-// for the api methinks
-// const { request } = require('undici');
+// For the API
 const apiKey = '7WDoEjkQt9cfWy4h7iT6u3ay';
 const apiUrl = 'https://danbooru.donmai.us/posts.json?tags=silver_wolf_(honkai:_star_rail)&login=aheriez&api_key=7WDoEjkQt9cfWy4h7iT6u3ay&limit=10';
 const api_key = '7WDoEjkQt9cfWy4h7iT6u3ay';
@@ -94,15 +92,10 @@ client.on("messageCreate", async (message) => {
         if (botCanSendMessages) {
             const interval = setInterval(() => {
                 message.channel.send('<@587053859772432384>');
-
-                // Stop sending messages after a certain condition, such as after a specific amount of time or a certain number of messages
-                // clearInterval(interval);
-            }, 1000); // Sends the message every second (1000 ms)
-
-            // Optionally, stop the spamming after some time
+            }, 1000); // in ms
             setTimeout(() => {
                 clearInterval(interval);
-            }, 100000000); // Stops spamming after 10 seconds
+            }, 100000000); 
         }
     }
 
@@ -154,8 +147,6 @@ client.on("messageCreate", async (message) => {
 
     // API call
     // API URL: https://testbooru.donmai.us/
-    // API Key: redacted
-    // Dont ask How This Works I Chatgpted it
     async function searchImages(apiKey, tags) {
         const params = new URLSearchParams({
             tags,
@@ -277,21 +268,18 @@ client.on("messageCreate", async (message) => {
     // 
 
     // Replaces every word with 'mike' along with certain suffixes 
-    // if (!message.author.bot && botCanSendMessages) {
-    //     const words = message.content.split(' ');
-    //     const mikeify = words.map(word => {
-    //         if (word.endsWith('ify')) {
-    //             return 'mikeify';
-    //         } else if (word.endsWith('ing')) {
-    //             return 'mikeing';
-    //         } else if (word.endsWith('s')) {
-    //             return 'mikes';
-    //         }
-    //         return 'mike';
-    //     }).join(' ');
-// 
-    //     message.channel.send(mikeify);
-    // }
-
-    // 
+     if (!message.author.bot && botCanSendMessages) {
+         const words = message.content.split(' ');
+         const mikeify = words.map(word => {
+             if (word.endsWith('ify')) {
+                 return 'mikeify';
+             } else if (word.endsWith('ing')) {
+                 return 'mikeing';
+             } else if (word.endsWith('s')) {
+                 return 'mikes';
+             }
+             return 'mike';
+         }).join(' '); 
+         message.channel.send(mikeify);
+     }
 });
