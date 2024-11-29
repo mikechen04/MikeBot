@@ -1,31 +1,20 @@
-mike bot!!!!
+cool little bot i made to mess around with js
 
 ---------------------------
 
 commands: 
 
-!mike help - LISTS ALL COMMANDS!!
+!mike help - list all commands
 
-!mike disable - DISABLES MIKE!!!
+!mike disable - disables the bot :(
 
-!mike enable - ENABLES MIKEIFYING!!!
+!mike enable - enables the bot!!
 
-!mike meow - old mike commands!!!!!!
+!mike meow - lists commands in a different way
 
-!mike jizz - meow
+!mike jizz - hmm
 
-!mike silverwolf - SILVERWOLF IMAGES!!!!!
+!mike silverwolf - shows random danbooru images of silverwolf :3
 
 !mike goon - gooning
 
----------------------------
-
-example: 
-
-i went to the park and was meowing
-
-output:
-
-mike mike mike mike mike mike mike mikeing
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!
