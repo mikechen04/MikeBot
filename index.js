@@ -1,21 +1,11 @@
 import dotenv from 'dotenv';
-import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
+import { Client, GatewayIntentBits, Events, EmbedBuilder, AttachmentBuilder } from 'discord.js';
 import fetch from 'node-fetch';
-import pkg from 'discord.js'
+import { createCanvas, loadImage } from 'canvas';
 
-// Takes image.txt and puts it into a const
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const imageFilePath = path.join(__dirname, 'images.txt');
-const imageLinks = fs.readFileSync(imageFilePath, 'utf-8').split('\n').filter(Boolean);
-
-// For the API
-const apiKey = '7WDoEjkQt9cfWy4h7iT6u3ay';
-const apiUrl = 'https://danbooru.donmai.us/posts.json?tags=silver_wolf_(honkai:_star_rail)&login=aheriez&api_key=7WDoEjkQt9cfWy4h7iT6u3ay&limit=10';
-const api_key = '7WDoEjkQt9cfWy4h7iT6u3ay';
+// API
+const apiKey = '';
+const apiUrl = '';
 // https://danbooru.donmai.us/posts?tags=silver_wolf_%28honkai%3A_star_rail%29
 // https://testbooru.donmai.us/
 
@@ -40,246 +30,176 @@ const client = new Client({
 
 client.login(process.env.DISCORD_TOKEN);
 
-let botCanSendMessages = true; 
-// let botCanSendMessagesButNotMikeify = true;
-// In the future maybe have an option to disable the mikeify but keep stuff like speech bubble, inside jokes etc
-
-
-// Read every message sent in the server 
+// Reads every message
 client.on("messageCreate", async (message) => {
     console.log(message);
 
-    if (message.content.startsWith('!mike help')) {
-        if (botCanSendMessages === true) {
-            const exampleEmbed = new EmbedBuilder()
-            .setColor(0xFFB6C1) //
-            .setTitle('THE JASKARAN OF JUDGING.') //
-            .setDescription(`
-                -=+=-
-                !mike help - LISTS ALL COMMANDS!!
-                !mike disable - DISABLES MIKE!!!
-                !mike enable - ENABLES MIKEIFYING!!!
-                !mike meow - old mike commands!!!!!!
-                !mike jizz - meow
-                !mike silverwolf - SILVERWOLF IMAGES!!!!!
-                !mike goon - gooning`)
-            .setImage('https://cdn.discordapp.com/attachments/446498978201337857/1277904706395574282/image.png?ex=66cedd00&is=66cd8b80&hm=bc264f12ee13cff9490b9a23eab55a481432c87452f65d0bd8ec01ae0b2d42b5&')
+});
 
-            // Send the embed to the same channel where the command was sent
-            message.channel.send({ embeds: [exampleEmbed] });
-            message.react('🇲')
-            message.react('🇮')
-            message.react('🇰')
-            message.react('🇪')
-            return;
-        }
-    }
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
+
+    const { commandName } = interaction;
+
+    if (commandName === 'speechbubble') {
     
-    // Help command
-    if (message.content.startsWith('!mike meow')) {
-        if (botCanSendMessages === true) {
-            message.channel.send(`Mike COMMANDS!!!
--=+=-
-!mike help - LISTS ALL COMMANDS!!
-!mike disable - DISABLES MIKE!!!
-!mike enable - ENABLES MIKEIFYING!!!`);
+        const imageUrl = interaction.options.getString('url');
+        if (!imageUrl) {
+            console.error('No URL provided.');
+            return interaction.editReply('Please provide a valid image URL.');
         }
-        return;
-    }
     
+        const baseImageUrl = "https://files.catbox.moe/pch85y.png";
 
-    if (message.content.startsWith('!mike nuke')) {
-        if (botCanSendMessages) {
-            const interval = setInterval(() => {
-                message.channel.send('<@587053859772432384>');
-            }, 1000); // in ms
-            setTimeout(() => {
-                clearInterval(interval);
-            }, 100000000); 
-        }
-    }
+        // Load image
+        const inputImage = await loadImage(imageUrl);
+        const canvas = createCanvas(inputImage.width, inputImage.height);
+        const ctx = canvas.getContext('2d');
 
-    // Command to enable/disable the bot
+        ctx.drawImage(inputImage, 0, 0, canvas.width, canvas.height);
 
-    // IN THE FUTURE MAKE THEM LIKE LOADING SCREENS
-    if (message.content.startsWith('!mike disable')) {
-        if (botCanSendMessages == false){
-            message.channel.send('mikeification ALREADY DISABLED!!!!!!!');
-            return;
-        }
-        botCanSendMessages = false;
-        message.channel.send('no more mikeifying :(');
-        return;
-    }
+        // Load speechbubble
+        const baseImage = await loadImage(baseImageUrl);
+        const baseImageHeight = canvas.height * 0.2; // 20% of the canvas height
+        ctx.drawImage(baseImage, 0, 0, canvas.width, baseImageHeight);
+        const buffer = canvas.toBuffer();
 
-    if (message.content.startsWith('!mike enable')) {
-        if (botCanSendMessages == true){
-            message.channel.send('mikeification ALREADY ENABLED!!!!!!!');
-            return;
-        }
-        botCanSendMessages = true;
-        message.channel.send('mikeification activated');
-        return;
-    }
+        // Create an attachment
+        const attachment = new AttachmentBuilder(buffer, { name: 'output.png' });
+        await interaction.reply({ files: [attachment] });
 
-    if (message.content.startsWith('!mike jizz')) {
-        if (botCanSendMessages == true){
-            message.channel.send('https://cdn.discordapp.com/attachments/446498978201337857/1277904706395574282/image.png?ex=66cedd00&is=66cd8b80&hm=bc264f12ee13cff9490b9a23eab55a481432c87452f65d0bd8ec01ae0b2d42b5&');
-            return;
-        }
-    }
+    } else if (commandName === 'silverwolf') {
+        // API call
+        // API URL: https://testbooru.donmai.us/
+        async function searchImages(apiKey) {
+            const params = new URLSearchParams({
+                tags: 'silverwolf',
+                api_key: apiKey,
+                limit: 100
+            });
 
-    // Speech bubble on top of an image sent by user
+            try {
+                const response = await fetch(`${apiUrl}?${params}`);
 
-    if (message.content.startsWith('!mike bubble')) {
-        if (botCanSendMessages == true){
-            return;
-        }
-    }
+                // Check if the response is actually JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const errorText = await response.text();
+                    console.error('Non-JSON response received:', errorText);
+                    throw new Error('Received non-JSON response from API');
+                }
 
-    if (message.content.startsWith('!mike goon')) {
-        if (botCanSendMessages == true){
-            const randomImage = imageLinks[Math.floor(Math.random() * imageLinks.length)];
-            message.channel.send(randomImage);
-            return;
-        }
-    }
-
-    // API call
-    // API URL: https://testbooru.donmai.us/
-    async function searchImages(apiKey, tags) {
-        const params = new URLSearchParams({
-            tags,
-            api_key: apiKey,
-            limit: 100
-        });
-    
-        try {
-            const response = await fetch(`${apiUrl}?${params}`);
-    
-            // Check if the response is actually JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const errorText = await response.text();
-                console.error('Non-JSON response received:', errorText);
-                throw new Error('Received non-JSON response from API');
+                const data = await response.json();
+                console.log('API Response:', data); // Debug line
+                return data.map((post) => ({
+                    title: post.tags,
+                    url: post.large_file_url || post.file_url // Use large file URL or fallback to file URL
+                }));
+            } catch (error) {
+                console.error('Error fetching images:', error);
+                throw error;
             }
-    
-            const data = await response.json();
-            console.log('API Response:', data); // Debug line
-            return data.map((post) => ({
-                title: post.tags,
-                url: post.large_file_url || post.file_url // Use large file URL or fallback to file URL
-            }));
-        } catch (error) {
-            console.error('Error fetching images:', error);
-            throw error;
         }
-    }
-    
-    if (message.content.startsWith('!mike silverwolf')) {
-        const args = message.content.split(' ').slice(1);
-        const searchQuery = args.join(' ');
-    
-        if (!searchQuery) {
-            return message.reply('Please provide some tags to search.');
-        }
-    
+
         try {
-            console.log('Searching for images with query:', searchQuery);
-            const results = await searchImages(apiKey, searchQuery);
+            console.log('Searching for images with query: silverwolf');
+            const results = await searchImages(apiKey);
             console.log('Search Results:', results);
-    
+
             if (results.length === 0) {
-                return message.reply('No images found for your search.');
+                return interaction.reply('No images found for your search.');
             }
-    
+
             // Pick a random image from the results
             const randomImage = results[Math.floor(Math.random() * results.length)];
             console.log('Selected Random Image:', randomImage);
-    
+
             // Create an embed for the random image
             const embed = new EmbedBuilder()
-                .setTitle('GOONER ALERT!!!')
-                .setDescription(`PLAP PLAP PLAP PLAP PLAP`)
+                .setTitle('😍')
+                .setDescription(`Here's your image!`)
                 .setColor('#0099ff')
-                .setFooter({ text: 'source: danbooru' })
-                .setImage(randomImage.url)
-                // .addFields({ 
-                //     name: 'Tags', 
-                //    value: randomImage.title || 'No tags available' // Handle undefined title
-                // });
-    
-            await message.reply({ embeds: [embed] });
-    
+                .setFooter({ text: 'Source: Danbooru' })
+                .setImage(randomImage.url);
+
+            await interaction.reply({ embeds: [embed] });
+
         } catch (error) {
             console.error('Error handling command:', error);
-            message.reply('DOESNT WORK TRY LATER.');
+            interaction.reply('Error handling command. Please try again later.');
         }
-    }
+
+    } else if (commandName === 'help') {
+        const exampleEmbed = new EmbedBuilder()
+        .setColor(0xFFB6C1) //
+        .setTitle('Help Commands') //
+        .setDescription(`
+        /help - shows all commands
+
+        /8ball - returns a random 8ball answer
+
+        /cf - coinflip time
+
+        /pingspam (user) - spam pings someone
+
+        /speechbubble (image url) - returns a speech bubble of that image
+
+        /avatar (user) - returns avatar in a .jpg format
+
+        /dice - returns a number 1-6
+
+        /roll (number) - returns a number 1-number, 100 by default
+
+        /ping - shows ping to the bot
+
+        /silverwolf - returns random image of silverwolf from danbooru`)
+        .setImage('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/07f1b69a-5074-4394-8a19-44dd55298130/dgq4mwc-cc552be5-3aba-4c34-aba5-d7e8ec73d07b.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzA3ZjFiNjlhLTUwNzQtNDM5NC04YTE5LTQ0ZGQ1NTI5ODEzMFwvZGdxNG13Yy1jYzU1MmJlNS0zYWJhLTRjMzQtYWJhNS1kN2U4ZWM3M2QwN2IucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.E0li2Yu8hddq61T6jbI9wi43enTRBnozuihSaZRE_Ww')
+        await interaction.reply({ embeds: [exampleEmbed] });
+        return;
+
+    } else if (commandName === 'dice') {
+        const number = Math.floor(Math.random() * 6) + 1;
+        await interaction.reply(`🎲 ${number} 🎲`);
+
+    } else if (commandName === 'roll') {
+        const sides = interaction.options.getInteger('sides') || 100;
+        const number = Math.floor(Math.random() * sides) + 1;
+        await interaction.reply(`${interaction.user.username} rolls ${number} point(s)`);
+
+    } else if (commandName === 'ping') {
+        await interaction.reply(`🏓 Latency is ${Date.now() - interaction.createdTimestamp}ms.`);
     
-    
-    // ----------
-    // Certain words in this section will trigger images or messages
-    // ----------
-
-    if (message.content.startsWith('skibidi')) {
-        if (botCanSendMessages == true){
-            message.channel.send('SKIBIDI TOILET!!!!!!!!!!!!!!!!')
-            return;
+    } else if (commandName === 'cf') {
+        const number = Math.floor(Math.random() * 2) + 1;
+        if (number === 1) {
+            await interaction.reply('Heads meow');
+        } else {
+            await interaction.reply('Tails meow');
         }
+
+    } else if (commandName === '8ball') {
+        const number = Math.floor(Math.random() * 20);
+        const responses = ["It is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it yes", "Most likely", "Outlook good", "Yes", "Signs point to yes", "Reply hazy try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful"];
+        await interaction.reply(responses[number]);
+
+    } else if (commandName === 'avatar') {
+        const user = interaction.options.getUser('user') || interaction.user;
+        const avatar = user.displayAvatarURL({ format: 'jpg', size: 1024 });
+        await interaction.reply(avatar);
+
+    } else if (commandName === 'pingspam') {
+        const user = interaction.options.getUser('user');
+        const interval = setInterval(() => {
+            interaction.channel.send(`<@${user.id}>`);
+        }, 1000); // in ms
+        setTimeout(() => {
+            clearInterval(interval);
+        }, 10000);
+        await interaction.reply(`Pinging ${user.username}!`);
+
+    } else {
+        await interaction.reply('Command not found!');
     }
-
-    if (message.content.startsWith('gimmick')) {
-        if (botCanSendMessages == true){
-            message.channel.send('i need a gimmick girlfriend in the rank ranges of 5-25k, must be a female (optional) and can play low ar, ez, reading, percision')
-            return;
-        }
-    }
-
-    if (message.content.includes('gta 6')) {
-        if (botCanSendMessages == true){
-            message.channel.send('^^^^ WE GOT THIS BEFORE GTA 6!!!!!!')
-            return;
-        }
-    }
-
-    if (message.content.includes('a girl without a cock')) {
-        if (botCanSendMessages == true){
-            message.channel.send('is like an angel without wings')
-            return;
-        }
-    }
-
-    // ----------
-    // End
-    // ----------
-
-    // Command to increase time it takes between mikeifying messages
-    if (message.content.includes('a girl without a cock')) {
-        if (botCanSendMessages == true){
-            message.channel.send('is like an angel without wings')
-            return;
-        }
-    }
-
-    // Create a /mike command, which brings up buttons & settings
-    // One for enable bot, one for disable
-    // 
-
-    // Replaces every word with 'mike' along with certain suffixes 
-     if (!message.author.bot && botCanSendMessages) {
-         const words = message.content.split(' ');
-         const mikeify = words.map(word => {
-             if (word.endsWith('ify')) {
-                 return 'mikeify';
-             } else if (word.endsWith('ing')) {
-                 return 'mikeing';
-             } else if (word.endsWith('s')) {
-                 return 'mikes';
-             }
-             return 'mike';
-         }).join(' '); 
-         message.channel.send(mikeify);
-     }
 });
+
+console.log('Bot is up 👍');
